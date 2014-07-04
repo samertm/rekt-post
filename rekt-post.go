@@ -170,7 +170,7 @@ func createEdges(g *graph) []*edge {
 }
 
 func newPath(p *post, folderPath string) string {
-	return folderPath + strings.Replace(p.title, " ", "_", -1) + ".md"
+	return folderPath + strings.Replace(p.title, " ", "-", -1) + ".md"
 }
 
 func generatePosts(g *graph, folderPath string) {
@@ -180,7 +180,7 @@ func generatePosts(g *graph, folderPath string) {
 			log.Fatal(err)
 		}
 		var links string
-		for i := 0; i < len(p.edges) && i < 3; i++ {
+		for i := 0; i < len(p.edges) && i < 5; i++ {
 			links += p.edges[i].Link(p, folderPath) + "\n"
 		}
 		_, err = f.WriteString(p.content + "\nSimilar Links:\n" + links)
