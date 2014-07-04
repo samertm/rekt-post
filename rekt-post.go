@@ -180,10 +180,10 @@ func generatePosts(g *graph, folderPath string) {
 			log.Fatal(err)
 		}
 		var links string
-		for i := 0; i < len(p.edges) && i < 5; i++ {
-			links += p.edges[i].Link(p, folderPath) + "\n"
+		for i := 0; i < len(p.edges) && i < 3; i++ {
+			links += "* " + p.edges[i].Link(p, "/posts/") + "\n"
 		}
-		_, err = f.WriteString(p.content + "\nSimilar Links:\n" + links)
+		_, err = f.WriteString(p.content + "\n######Similar Links:\n" + links)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -197,5 +197,5 @@ func main() {
 	g := &graph{}
 	g.vertices = makePosts("/home/samer/posts/")
 	g.edges = createEdges(g)
-	generatePosts(g, "/home/samer/genposts/")
+	generatePosts(g, "/home/samer/pelican/content/posts/")
 }
