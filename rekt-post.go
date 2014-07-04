@@ -28,6 +28,9 @@ type graph struct {
 	edges     []link
 }
 
+// cover thy eyes
+var bannedWords = map[string]bool{"the": true, "i": true, "to": true, "a": true, "and": true, "of": true, "my": true, "in": true, "that": true, "it": true, "is": true, "for": true, "with": true, "on": true, "was": true, "im": true, "as": true, "be": true, "how": true, "but": true, "this": true, "you": true, "about": true, "have": true, "so": true, "more": true, "an": true, "me": true, "are": true, "if": true, "all": true, "at": true, "when": true, "because": true, "ive": true, "not": true, "like": true, "one": true, "get": true, "can": true, "which": true, "would": true, "after": true, "up": true, "what": true, "from": true, "by": true, "its": true, "before": true, "first": true, "had": true, "will": true, "img": true, "also": true, "he": true, "": true}
+
 func makePosts(path string) []post {
 	if path[len(path)-1] != '/' {
 		path += string(append([]byte(path), '/'))
@@ -86,6 +89,10 @@ func (l *lexer) run() chan token {
 func (l *lexer) emit(typ string) {
 	s := strings.ToLower(string(l.store))
 	l.store = make([]rune, 0)
+	if bannedWords[s] {
+		// only returns true if s is in the set of banned words
+		return
+	}
 	l.out <- token{typ: typ, data: s}
 }
 
@@ -192,6 +199,11 @@ func word(l *lexer) mdState {
 		return startWord
 	}
 	if acceptRune(r, junk) {
+		// emit if "]" or ")"
+		if acceptRune(r, "])") {
+			l.emit("word")
+			return startWord
+		}
 		return word
 	}
 	// got a char
@@ -290,17 +302,28 @@ func concatFreqs(freq1, freq2 map[string]int) map[string]int {
 }
 
 type freqPair struct {
-	val  string
+	word string
 	freq int
 }
 
-// func sortFreqs(freqs map[string]int) []freqPair {
-// 	var sort func([]freqPair, freqPair) []freqPair
-// 	sort = func([]freqPair, freqPair) []freqPair {
-// 		return make([]freqPair, 0)
-// 	}
-// }
-		
+func sortFreqs(freqs map[string]int) []freqPair {
+	var sortedAdd func([]freqPair, freqPair) []freqPair
+	sortedAdd = func(fps []freqPair, fp freqPair) []freqPair {
+		for i := range fps {
+			if fp.freq > fps[i].freq {
+				// add where i is
+				return append(fps[:i], append([]freqPair{fp}, fps[i:]...)...)
+			}
+		}
+		// add to end
+		return append(fps, fp)
+	}
+	storeFreqs := make([]freqPair, 0, len(freqs))
+	for k, v := range freqs {
+		storeFreqs = sortedAdd(storeFreqs, freqPair{word: k, freq: v})
+	}
+	return storeFreqs
+}
 
 func main() {
 	posts := makePosts("/home/samer/posts/")
@@ -308,5 +331,8 @@ func main() {
 	for _, p := range posts {
 		cats = concatFreqs(cats, p.freqs)
 	}
-	fmt.Println(cats)
+	fs := sortFreqs(cats)
+	for _, fp := range fs {
+		fmt.Print("\"", fp.word, "\", ", fp.freq, "\n")
+	}
 }
