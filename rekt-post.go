@@ -108,7 +108,7 @@ var (
 	newline    = "\n"
 	whitespace = " \n\t"
 	// went through all the non-letters on my keyboard ^_^
-	junk = "\"!@#$%^&*()_+1234567890-=`~,./<>?;:[]{}\\|"
+	junk = "\"!@#$%^&*()_+1234567890-=`~,./<>?;:[]{}\\|'"
 )
 
 // for lexing markdown
@@ -278,6 +278,35 @@ func parseTop(p *parser) post {
 	return po
 }
 
+func concatFreqs(freq1, freq2 map[string]int) map[string]int {
+	catted := make(map[string]int)
+	for k, v := range freq1 {
+		catted[k] = v
+	}
+	for k, v := range freq2 {
+		catted[k] += v
+	}
+	return catted
+}
+
+type freqPair struct {
+	val  string
+	freq int
+}
+
+// func sortFreqs(freqs map[string]int) []freqPair {
+// 	var sort func([]freqPair, freqPair) []freqPair
+// 	sort = func([]freqPair, freqPair) []freqPair {
+// 		return make([]freqPair, 0)
+// 	}
+// }
+		
+
 func main() {
-	fmt.Println(makePosts("/home/samer/posts/"))
+	posts := makePosts("/home/samer/posts/")
+	cats := make(map[string]int)
+	for _, p := range posts {
+		cats = concatFreqs(cats, p.freqs)
+	}
+	fmt.Println(cats)
 }
