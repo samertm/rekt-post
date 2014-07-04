@@ -14,16 +14,25 @@ type post struct {
 	title string
 	path  string
 	freqs map[string]int
-	edges []edge
+	edges []*edge
+}
+
+func (p *post) String() string {
+	return p.title
 }
 
 type edge struct {
-	posts  [2]post
+	posts  [2]*post
 	weight int
 }
 
-func newEdge(p0, p1 post) edge {
-	return edge{posts: [2]post{p0, p1}}
+func (e *edge) String() string {
+	return "[" + e.posts[0].title + " " +
+		e.posts[1].title + "] " + fmt.Sprint(e.weight)
+}
+
+func newEdge(p0, p1 *post) *edge {
+	return &edge{posts: [2]*post{p0, p1}}
 }
 
 func (l edge) contains(p post) bool {
@@ -31,8 +40,19 @@ func (l edge) contains(p post) bool {
 }
 
 type graph struct {
-	verticies []post
-	edges     []edge
+	verticies []*post
+	edges     []*edge
+}
+
+func (g graph) String() string {
+	var s string
+	for i := range g.verticies {
+		s += fmt.Sprint(g.verticies[i])
+	}
+	for i := range g.edges {
+		s += fmt.Sprint(g.edges[i])
+	}
+	return s
 }
 
 func (g graph) containsEdge(p0, p1 post) bool {
@@ -44,7 +64,7 @@ func (g graph) containsEdge(p0, p1 post) bool {
 	return false
 }
 
-func makePosts(path string) []post {
+func makePosts(path string) []*post {
 	if path[len(path)-1] != '/' {
 		path += string(append([]byte(path), '/'))
 	}
@@ -53,7 +73,7 @@ func makePosts(path string) []post {
 		// wat do
 		log.Fatal(err)
 	}
-	posts := make([]post, 0)
+	posts := make([]*post, 0)
 	for _, path := range paths {
 		// pass file contents onto makePost
 		file, err := os.Open(path)
@@ -69,7 +89,7 @@ func makePosts(path string) []post {
 	return posts
 }
 
-func makePost(contents string) post {
+func makePost(contents string) *post {
 	// need to lex the input: get the title and any other attributes :O
 	lex := &lexer{
 		contents: []rune(contents),
@@ -98,18 +118,20 @@ func min(a, b int) int {
 	return b
 }
 
-func generateEdge(p0, p1 post) edge {
+func generateEdge(p0, p1 *post) *edge {
 	e := newEdge(p0, p1)		
 	keys := union(p0.freqs, p1.freqs)
 	for _, k := range keys {
 		e.weight += min(p0.freqs[k], p1.freqs[k])
 	}
+	p0.edges = append(p0.edges, e)
+	p1.edges = append(p1.edges, e)
 	return e
 }
 
-func createEdges(g *graph) []edge {
+func createEdges(g *graph) []*edge {
 	p := g.verticies
-	edges := make([]edge, 0, 2*len(p)) // not sure how much of a cap i should allocate...
+	edges := make([]*edge, 0, 2*len(p)) // not sure how much of a cap i should allocate...
 	for i := 0; i < len(p); i++ {
 		for j := i + 1; j < len(p); j++ {
 			edges = append(edges, generateEdge(p[i], p[j]))
@@ -122,5 +144,6 @@ func main() {
 	g := &graph{}
 	g.verticies = makePosts("/home/samer/posts/")
 	g.edges = createEdges(g)
+	fmt.Println(g)
 }
 

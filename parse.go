@@ -41,11 +41,11 @@ func (p *parser) acceptType(typ string) bool {
 }
 
 // parses markdown
-func parseTop(p *parser) post {
+func parseTop(p *parser) *post {
 	if p.acceptType("eof") {
 		log.Fatal("unexpected eof")
 	}
-	po := post{freqs: make(map[string]int)}
+	po := &post{freqs: make(map[string]int)}
 	if p.acceptType("attr") {
 		attr := p.next()
 		if attr.data == "title" {
