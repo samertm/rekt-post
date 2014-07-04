@@ -4,19 +4,6 @@ import (
 	"log"
 )
 
-// parses markdown
-func makePost(contents string) post {
-	// need to lex the input: get the title and any other attributes :O
-	lex := &lexer{
-		contents: []rune(contents),
-		next:     make(chan rune),
-		out:      make(chan token),
-	}
-	toks := lex.run()
-	p := &parser{toks: toks}
-	return parseTop(p)
-}
-
 type parser struct {
 	toks chan token
 	// stack: push/pop onto/off right end
@@ -53,6 +40,7 @@ func (p *parser) acceptType(typ string) bool {
 	return p.peek().typ == typ
 }
 
+// parses markdown
 func parseTop(p *parser) post {
 	if p.acceptType("eof") {
 		log.Fatal("unexpected eof")

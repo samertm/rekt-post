@@ -35,6 +35,7 @@ func makePosts(path string) []post {
 	}
 	posts := make([]post, 0)
 	for _, path := range paths {
+		// pass file contents onto makePost
 		file, err := os.Open(path)
 		if err != nil {
 			log.Fatal(err)
@@ -46,6 +47,18 @@ func makePosts(path string) []post {
 		posts = append(posts, makePost(string(contents)))
 	}
 	return posts
+}
+
+func makePost(contents string) post {
+	// need to lex the input: get the title and any other attributes :O
+	lex := &lexer{
+		contents: []rune(contents),
+		next:     make(chan rune),
+		out:      make(chan token),
+	}
+	toks := lex.run()
+	p := &parser{toks: toks}
+	return parseTop(p)
 }
 
 func main() {
