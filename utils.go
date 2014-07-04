@@ -1,5 +1,9 @@
 package main
 
+import (
+	"fmt"
+)
+
 // used for data gathering
 // now here for dust gathering
 
