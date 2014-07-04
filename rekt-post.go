@@ -118,14 +118,25 @@ func min(a, b int) int {
 	return b
 }
 
+func sortedAppendEdge(es []*edge, e *edge) []*edge {
+	for i := range es {
+		if e.weight > es[i].weight {
+			// add where i is
+			return append(es[:i], append([]*edge{e}, es[i:]...)...)
+		}
+	}
+	// add to end
+	return append(es, e)
+}
+
 func generateEdge(p0, p1 *post) *edge {
-	e := newEdge(p0, p1)		
+	e := newEdge(p0, p1)
 	keys := union(p0.freqs, p1.freqs)
 	for _, k := range keys {
 		e.weight += min(p0.freqs[k], p1.freqs[k])
 	}
-	p0.edges = append(p0.edges, e)
-	p1.edges = append(p1.edges, e)
+	p0.edges = sortedAppendEdge(p0.edges, e)
+	p1.edges = sortedAppendEdge(p1.edges, e)
 	return e
 }
 
@@ -146,4 +157,3 @@ func main() {
 	g.edges = createEdges(g)
 	fmt.Println(g)
 }
-
