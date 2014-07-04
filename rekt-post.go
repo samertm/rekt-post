@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 var _ = fmt.Println // debugging
@@ -13,8 +14,10 @@ var _ = fmt.Println // debugging
 type post struct {
 	title string
 	path  string
-	freqs map[string]int
-	edges []*edge
+	// content pre-processing
+	content string
+	freqs   map[string]int
+	edges   []*edge
 }
 
 func (p *post) String() string {
@@ -31,6 +34,19 @@ func (e *edge) String() string {
 		e.posts[1].title + "] " + fmt.Sprint(e.weight)
 }
 
+// generates a link for p
+func (e *edge) Link(p *post, folderPath string) string {
+	var otherPost *post
+	if e.posts[0].title != p.title {
+		otherPost = e.posts[0]
+	} else {
+		otherPost = e.posts[1]
+	}
+	s := "[" + otherPost.title + "](|filename|" +
+		newPath(otherPost, folderPath) + ")"
+	return s
+}
+
 func newEdge(p0, p1 *post) *edge {
 	return &edge{posts: [2]*post{p0, p1}}
 }
@@ -40,14 +56,14 @@ func (l edge) contains(p post) bool {
 }
 
 type graph struct {
-	verticies []*post
+	vertices []*post
 	edges     []*edge
 }
 
 func (g graph) String() string {
 	var s string
-	for i := range g.verticies {
-		s += fmt.Sprint(g.verticies[i])
+	for i := range g.vertices {
+		s += fmt.Sprint(g.vertices[i])
 	}
 	for i := range g.edges {
 		s += fmt.Sprint(g.edges[i])
@@ -98,7 +114,9 @@ func makePost(contents string) *post {
 	}
 	toks := lex.run()
 	p := &parser{toks: toks}
-	return parseTop(p)
+	post := parseTop(p)
+	post.content = contents
+	return post
 }
 
 func union(freq0, freq1 map[string]int) []string {
@@ -141,7 +159,7 @@ func generateEdge(p0, p1 *post) *edge {
 }
 
 func createEdges(g *graph) []*edge {
-	p := g.verticies
+	p := g.vertices
 	edges := make([]*edge, 0, 2*len(p)) // not sure how much of a cap i should allocate...
 	for i := 0; i < len(p); i++ {
 		for j := i + 1; j < len(p); j++ {
@@ -151,9 +169,33 @@ func createEdges(g *graph) []*edge {
 	return edges
 }
 
+func newPath(p *post, folderPath string) string {
+	return folderPath + strings.Replace(p.title, " ", "_", -1) + ".md"
+}
+
+func generatePosts(g *graph, folderPath string) {
+	for _, p := range g.vertices {
+		f, err := os.Create(newPath(p, folderPath))
+		if err != nil {
+			log.Fatal(err)
+		}
+		var links string
+		for i := 0; i < len(p.edges) && i < 3; i++ {
+			links += p.edges[i].Link(p, folderPath) + "\n"
+		}
+		_, err = f.WriteString(p.content + "\nSimilar Links:\n" + links)
+		if err != nil {
+			log.Fatal(err)
+		}
+		if err = f.Close(); err != nil {
+			log.Fatal(err)
+		}
+	}
+}
+
 func main() {
 	g := &graph{}
-	g.verticies = makePosts("/home/samer/posts/")
+	g.vertices = makePosts("/home/samer/posts/")
 	g.edges = createEdges(g)
-	fmt.Println(g)
+	generatePosts(g, "/home/samer/genposts/")
 }
