@@ -183,7 +183,8 @@ func generatePosts(g *graph, folderPath string) {
 		for i := 0; i < len(p.edges) && i < 3; i++ {
 			links += "* " + p.edges[i].Link(p, "/posts/") + "\n"
 		}
-		_, err = f.WriteString(p.content + "\n######Similar Links:\n" + links)
+		tagline := "\n*Similar Links*: (powered by [rekt-post](https://github.com/samertm/rekt-post))\n"
+		_, err = f.WriteString(p.content + tagline + links)
 		if err != nil {
 			log.Fatal(err)
 		}
