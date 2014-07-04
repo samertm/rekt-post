@@ -3,6 +3,20 @@ package main
 // used for data gathering
 // now here for dust gathering
 
+// the only function you should use
+func orderedFreqs(posts []post) string {
+	cats := make(map[string]int)
+	for _, p := range posts {
+		cats = concatFreqs(cats, p.freqs)
+	}
+	fs := sortFreqs(cats)
+	var s string
+	for _, fp := range fs {
+		s += fmt.Sprint("\"", fp.word, "\", ", fp.freq, "\n")
+	}
+	return s
+}
+
 func concatFreqs(freq1, freq2 map[string]int) map[string]int {
 	catted := make(map[string]int)
 	for k, v := range freq1 {
@@ -37,3 +51,4 @@ func sortFreqs(freqs map[string]int) []freqPair {
 	}
 	return storeFreqs
 }
+

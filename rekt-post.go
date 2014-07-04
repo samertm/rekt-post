@@ -63,12 +63,4 @@ func makePost(contents string) post {
 
 func main() {
 	posts := makePosts("/home/samer/posts/")
-	cats := make(map[string]int)
-	for _, p := range posts {
-		cats = concatFreqs(cats, p.freqs)
-	}
-	fs := sortFreqs(cats)
-	for _, fp := range fs {
-		fmt.Print("\"", fp.word, "\", ", fp.freq, "\n")
-	}
 }
