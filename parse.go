@@ -45,7 +45,7 @@ func parseTop(p *parser) *post {
 	if p.acceptType("eof") {
 		log.Fatal("unexpected eof")
 	}
-	po := &post{freqs: make(map[string]int)}
+	po := &post{freqs: make(map[string]float64)}
 	if p.acceptType("attr") {
 		attr := p.next()
 		if attr.data == "title" {

@@ -9,7 +9,7 @@ import (
 
 // the only function you should use
 func orderedFreqs(posts []post) string {
-	cats := make(map[string]int)
+	cats := make(map[string]float64)
 	for _, p := range posts {
 		cats = concatFreqs(cats, p.freqs)
 	}
@@ -21,8 +21,8 @@ func orderedFreqs(posts []post) string {
 	return s
 }
 
-func concatFreqs(freq1, freq2 map[string]int) map[string]int {
-	catted := make(map[string]int)
+func concatFreqs(freq1, freq2 map[string]float64) map[string]float64 {
+	catted := make(map[string]float64)
 	for k, v := range freq1 {
 		catted[k] = v
 	}
@@ -34,10 +34,10 @@ func concatFreqs(freq1, freq2 map[string]int) map[string]int {
 
 type freqPair struct {
 	word string
-	freq int
+	freq float64
 }
 
-func sortFreqs(freqs map[string]int) []freqPair {
+func sortFreqs(freqs map[string]float64) []freqPair {
 	var sortedAdd func([]freqPair, freqPair) []freqPair
 	sortedAdd = func(fps []freqPair, fp freqPair) []freqPair {
 		for i := range fps {
