@@ -255,7 +255,15 @@ func generatePosts(g *graph, folderPath string) {
 		for i := 0; i < len(p.edges) && i < 3; i++ {
 			links += "* " + p.edges[i].Link(p, "/posts/") + "\n"
 		}
-		tagline := "\n*Similar Links: (powered by [rekt-post](https://github.com/samertm/rekt-post))*\n\n"
+		// Bug #1
+		// Markdown needs an extra line if the content
+		// end with a newline.
+		var extraNewline string
+		if p.content[len(p.content)-1] != '\n' {
+			extraNewline = "\n"
+		}
+		tagline := extraNewline +
+			"\n*Similar Links: (powered by [rekt-post](https://github.com/samertm/rekt-post))*\n\n"
 		_, err = f.WriteString(p.content + tagline + links)
 		if err != nil {
 			log.Fatal(err)
